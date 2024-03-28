@@ -74,11 +74,14 @@ public class Interpreter {
             ex.printStackTrace();
             Interpreter.fatalError("Uncaught parsing error: " + ex, Interpreter.EXIT_PARSING_ERROR);
         }
-        //astRoot.println(System.out);
+        // astRoot.println(System.out);
         interpreter = new Interpreter(astRoot);
         interpreter.initMemoryManager(gcType, heapBytes);
-        String returnValueAsString = interpreter.executeRoot(astRoot, quandaryArg).toString();
-        System.out.println("Interpreter returned " + returnValueAsString);
+        // String returnValueAsString = interpreter.executeRoot(astRoot,
+        // quandaryArg).toString();
+        Object returnValue = interpreter.exec(quandaryArg).toString();
+        // System.out.println("Interpreter returned " + returnValueAsString);
+        System.out.println("Interpreter returned " + returnValue);
     }
 
     final Program astRoot;
@@ -91,37 +94,60 @@ public class Interpreter {
 
     void initMemoryManager(String gcType, long heapBytes) {
         if (gcType.equals("Explicit")) {
-            throw new RuntimeException("Explicit not implemented");            
+            throw new RuntimeException("Explicit not implemented");
         } else if (gcType.equals("MarkSweep")) {
-            throw new RuntimeException("MarkSweep not implemented");            
+            throw new RuntimeException("MarkSweep not implemented");
         } else if (gcType.equals("RefCount")) {
-            throw new RuntimeException("RefCount not implemented");            
+            throw new RuntimeException("RefCount not implemented");
         } else if (gcType.equals("NoGC")) {
             // Nothing to do
         }
     }
 
-    Object executeRoot(Program astRoot, long arg) {
-        return evaluate(astRoot.getExpr());
+    // Object executeRoot(Program astRoot, long arg) {
+    // if (astRoot.hasReturnStmt()) {
+    // ReturnStmt returnStmt = astRoot.getReturnStmt();
+    // return evaluate(returnStmt.getExpr());
+    // } else {
+    // return evaluate(astRoot.getExpr());
+    // }
+    // }
+
+    // Object evaluate(Expr expr) {
+    // if (expr instanceof ConstExpr) {
+    // return ((ConstExpr) expr).getValue();
+    // } else if (expr instanceof BinaryExpr) {
+    // BinaryExpr binaryExpr = (BinaryExpr) expr;
+    // switch (binaryExpr.getOperator()) {
+    // case BinaryExpr.PLUS:
+    // return (Long) evaluate(binaryExpr.getLeftExpr()) + (Long)
+    // evaluate(binaryExpr.getRightExpr());
+    // case BinaryExpr.MINUS:
+    // return (Long) evaluate(binaryExpr.getLeftExpr()) - (Long)
+    // evaluate(binaryExpr.getRightExpr());
+    // case BinaryExpr.TIMES:
+    // return (Long) evaluate(binaryExpr.getLeftExpr()) * (Long)
+    // evaluate(binaryExpr.getRightExpr());
+    // default:
+    // throw new RuntimeException("Unhandled operator");
+    // }
+    // } else if (expr instanceof UnaryMinusExpr) {
+    // Expr child = ((UnaryMinusExpr) expr).getExpr();
+    // long value = (long) evaluate(child);
+    // long newValue = -value;
+    // return newValue;
+    // } else {
+    // throw new RuntimeException("Unhandled Expr type");
+    // }
+    // }
+
+    Object exec(long arg) {
+        Object returnValue = astRoot.exec(arg);
+        return returnValue;
     }
 
-    Object evaluate(Expr expr) {
-        if (expr instanceof ConstExpr) {
-            return ((ConstExpr)expr).getValue();
-        } else if (expr instanceof BinaryExpr) {
-            BinaryExpr binaryExpr = (BinaryExpr)expr;
-            switch (binaryExpr.getOperator()) {
-                case BinaryExpr.PLUS: return (Long)evaluate(binaryExpr.getLeftExpr()) + (Long)evaluate(binaryExpr.getRightExpr());
-                case BinaryExpr.MINUS: return (Long)evaluate(binaryExpr.getLeftExpr()) - (Long)evaluate(binaryExpr.getRightExpr());
-                default: throw new RuntimeException("Unhandled operator");
-            }
-        } else {
-            throw new RuntimeException("Unhandled Expr type");
-        }
-    }
-
-	public static void fatalError(String message, int processReturnCode) {
+    public static void fatalError(String message, int processReturnCode) {
         System.out.println(message);
         System.exit(processReturnCode);
-	}
+    }
 }

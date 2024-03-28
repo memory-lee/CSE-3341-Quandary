@@ -1,21 +1,24 @@
 package ast;
 
-import java.io.PrintStream;
+import java.util.HashMap;
+import java.util.List;
 
 public class Program extends ASTNode {
 
-    final Expr expr;
+    public static final HashMap<String, FuncDef> FunctionMap = new HashMap<String, FuncDef>();
 
-    public Program(Expr expr, Location loc) {
+    final FuncDefList funcDefs;
+
+    public Program(List<FuncDef> funcDefs, Location loc) {
         super(loc);
-        this.expr = expr;
+        this.funcDefs = new FuncDefList(funcDefs, loc);
+
+        for (int i = 0; i < funcDefs.size(); i++) {
+            Program.FunctionMap.put(funcDefs.get(i).funcName, funcDefs.get(i));
+        }
     }
 
-    public Expr getExpr() {
-        return expr;
-    }
-
-    public void println(PrintStream ps) {
-        ps.println(expr);
+    public Object exec(long argument) {
+        return this.funcDefs.exec(argument);
     }
 }
