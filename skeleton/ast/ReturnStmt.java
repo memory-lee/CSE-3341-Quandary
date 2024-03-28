@@ -1,7 +1,5 @@
 package ast;
 
-import java.util.HashMap;
-
 public class ReturnStmt extends Stmt {
 
     final Expr expr;
@@ -11,13 +9,12 @@ public class ReturnStmt extends Stmt {
         this.expr = expr;
     }
 
-    @Override
-    public String toString() {
-        return "return " + this.expr.toString() + ";";
+    public Expr getExpr() {
+        return expr;
     }
 
     @Override
-    Object exec(HashMap<String, Long> variables) {
-        return this.expr.eval(variables);
+    public String toString() {
+        return null;
     }
 }

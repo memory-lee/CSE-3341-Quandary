@@ -1,7 +1,5 @@
 package ast;
 
-import java.util.HashMap;
-
 public class ConstExpr extends Expr {
 
     final Object value;
@@ -11,13 +9,12 @@ public class ConstExpr extends Expr {
         this.value = value;
     }
 
-    @Override
-    public String toString() {
-        return value.toString();
+    public Object getValue() {
+        return value;
     }
 
     @Override
-    Object eval(HashMap<String, Long> variables) {
-        return value;
+    public String toString() {
+        return value.toString();
     }
 }

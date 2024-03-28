@@ -77,11 +77,8 @@ public class Interpreter {
         // astRoot.println(System.out);
         interpreter = new Interpreter(astRoot);
         interpreter.initMemoryManager(gcType, heapBytes);
-        // String returnValueAsString = interpreter.executeRoot(astRoot,
-        // quandaryArg).toString();
-        Object returnValue = interpreter.exec(quandaryArg).toString();
-        // System.out.println("Interpreter returned " + returnValueAsString);
-        System.out.println("Interpreter returned " + returnValue);
+        String returnValueAsString = interpreter.executeRoot(astRoot, quandaryArg).toString();
+        System.out.println("Interpreter returned " + returnValueAsString);
     }
 
     final Program astRoot;
@@ -104,46 +101,38 @@ public class Interpreter {
         }
     }
 
-    // Object executeRoot(Program astRoot, long arg) {
-    // if (astRoot.hasReturnStmt()) {
-    // ReturnStmt returnStmt = astRoot.getReturnStmt();
-    // return evaluate(returnStmt.getExpr());
-    // } else {
-    // return evaluate(astRoot.getExpr());
-    // }
-    // }
+    Object executeRoot(Program astRoot, long arg) {
+        return execute(astRoot.getStmt());
+    }
 
-    // Object evaluate(Expr expr) {
-    // if (expr instanceof ConstExpr) {
-    // return ((ConstExpr) expr).getValue();
-    // } else if (expr instanceof BinaryExpr) {
-    // BinaryExpr binaryExpr = (BinaryExpr) expr;
-    // switch (binaryExpr.getOperator()) {
-    // case BinaryExpr.PLUS:
-    // return (Long) evaluate(binaryExpr.getLeftExpr()) + (Long)
-    // evaluate(binaryExpr.getRightExpr());
-    // case BinaryExpr.MINUS:
-    // return (Long) evaluate(binaryExpr.getLeftExpr()) - (Long)
-    // evaluate(binaryExpr.getRightExpr());
-    // case BinaryExpr.TIMES:
-    // return (Long) evaluate(binaryExpr.getLeftExpr()) * (Long)
-    // evaluate(binaryExpr.getRightExpr());
-    // default:
-    // throw new RuntimeException("Unhandled operator");
-    // }
-    // } else if (expr instanceof UnaryMinusExpr) {
-    // Expr child = ((UnaryMinusExpr) expr).getExpr();
-    // long value = (long) evaluate(child);
-    // long newValue = -value;
-    // return newValue;
-    // } else {
-    // throw new RuntimeException("Unhandled Expr type");
-    // }
-    // }
+    Object execute(Stmt stmt) {
+        if (stmt instanceof ReturnStmt) {
+            return evaluate(((ReturnStmt) stmt).getExpr());
+        } else {
+            throw new RuntimeException("Unhandled Stmt type");
+        }
+    }
 
-    Object exec(long arg) {
-        Object returnValue = astRoot.exec(arg);
-        return returnValue;
+    Object evaluate(Expr expr) {
+        if (expr instanceof ConstExpr) {
+            return ((ConstExpr) expr).getValue();
+        } else if (expr instanceof UnaryMinusExpr) {
+            return -1 * (Long) evaluate(((UnaryMinusExpr) expr).getExpr());
+        } else if (expr instanceof BinaryExpr) {
+            BinaryExpr binaryExpr = (BinaryExpr) expr;
+            switch (binaryExpr.getOperator()) {
+                case BinaryExpr.PLUS:
+                    return (Long) evaluate(binaryExpr.getLeftExpr()) + (Long) evaluate(binaryExpr.getRightExpr());
+                case BinaryExpr.MINUS:
+                    return (Long) evaluate(binaryExpr.getLeftExpr()) - (Long) evaluate(binaryExpr.getRightExpr());
+                case BinaryExpr.TIMES:
+                    return (Long) evaluate(binaryExpr.getLeftExpr()) * (Long) evaluate(binaryExpr.getRightExpr());
+                default:
+                    throw new RuntimeException("Unhandled operator");
+            }
+        } else {
+            throw new RuntimeException("Unhandled Expr type");
+        }
     }
 
     public static void fatalError(String message, int processReturnCode) {

@@ -19,8 +19,8 @@ import interpreter.Interpreter;
 %{
     StringBuffer string = new StringBuffer();
     public Lexer(java.io.Reader in, ComplexSymbolFactory sf){
-	this(in);
-	symbolFactory = sf;
+    this(in);
+    symbolFactory = sf;
     }
     ComplexSymbolFactory symbolFactory;
 
@@ -60,48 +60,21 @@ white_space = {new_line} | [ \t\f]
 /* int literals */
 {IntLiteral} { return symbol("Intconst", INTCONST, Long.parseLong(yytext())); }
 
-/* keywords */
-"int"             { return symbol("int",    INT); }
-"return"          { return symbol("return", RETURN); }
-"print"           { return symbol("print", PRINT); }
-"if"              { return symbol("if",     IF); }
-"else"            { return symbol("else",   ELSE); }
-
 /* separators */
 "+"               { return symbol("+",  PLUS); }
 "-"               { return symbol("-",  MINUS); }
+"*"               { return symbol("*",  TIMES); }
 "("               { return symbol("(",  LPAREN); }
 ")"               { return symbol(")",  RPAREN); }
-"*"               { return symbol("*",  TIMES); }
-";"               { return symbol(";", SEMICOLON); }
-","               { return symbol(",", COMMA); }
-"{"               { return symbol("{",  LBRACE); }
-"}"               { return symbol("}",  RBRACE); }
 
-"<="              { return symbol("<=", LESS_THAN_OR_EQUAL_TO); }
-">="              { return symbol(">=", GREATER_THAN_OR_EQUAL_TO); }
-"=="              { return symbol("==", EQUAL_TO); }
-"!="              { return symbol("!=", NOT_EQUAL_TO); }
-"<"               { return symbol("<",  LESS_THAN); }
-">"               { return symbol(">",  GREATER_THAN); }
-"&&"              { return symbol("&&", AND); }
-"||"              { return symbol("||", OR); }
-"!"               { return symbol("!",  NOT); }
-"="               { return symbol("=",  ASSIGN); }
-
-
+"return"          { return symbol("return", RETURN); }
+";"               { return symbol(";",  SEMICOLON); }
 
 /* comments */
 "/*" [^*] ~"*/" | "/*" "*"+ "/"
                   { /* ignore comments */ }
 
 {white_space}     { /* ignore */ }
-
-
-/* Identifiers start with a letter or an underscore,
-followed by a sequence of letters, numbers, or underscores */
-[_a-zA-Z][_a-zA-Z0-9]*
-                    { return symbol("Ident", IDENT, new String(yytext())); }
 
 }
 
