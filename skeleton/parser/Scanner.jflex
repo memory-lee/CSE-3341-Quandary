@@ -84,6 +84,7 @@ white_space = {new_line} | [ \t\f]
 "||"              { return symbol("||", OR); }
 "!"               { return symbol("!",  NOT); }
 
+"while"           { return symbol("while", WHILE); }
 "return"          { return symbol("return", RETURN); }
 ";"               { return symbol(";",  SEMICOLON); }
 ","               { return symbol(",", COMMA); }

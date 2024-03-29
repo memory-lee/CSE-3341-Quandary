@@ -139,6 +139,18 @@ public class Interpreter {
         } else if (stmt instanceof PrintStmt) {
             System.out.println(evaluate(((PrintStmt) stmt).getExpr(), env));
             return null;
+        } else if (stmt instanceof WhileStmt) {
+            /**
+             * !The while loop statement here won't function as expected.
+             */
+            WhileStmt whileStmt = (WhileStmt) stmt;
+            while (evaluate(whileStmt.getCond(), env)) {
+                Object retValue = execute(whileStmt.getStmt(), env);
+                if (retValue != null) {
+                    return retValue;
+                }
+            }
+            return null;
         } else {
             throw new RuntimeException("Unhandled statement type");
         }
