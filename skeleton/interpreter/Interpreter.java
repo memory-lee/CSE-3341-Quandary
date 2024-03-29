@@ -84,12 +84,10 @@ public class Interpreter {
 
     final Program astRoot;
     final Random random;
-    final HashMap<String, Object> env;
 
     private Interpreter(Program astRoot) {
         this.astRoot = astRoot;
         this.random = new Random();
-        this.env = new HashMap<String, Object>();
     }
 
     void initMemoryManager(String gcType, long heapBytes) {
@@ -105,60 +103,83 @@ public class Interpreter {
     }
 
     Object executeRoot(Program astRoot, long arg) {
-        env.put(astRoot.getArgName(), arg);
-        return execute(astRoot.getStmtList());
+        FuncDef mainFuncDef = astRoot.getFuncs().lookupFuncDef("main");
+        HashMap<String, Object> mainEnv = new HashMap<String, Object>();
+        mainEnv.put(mainFuncDef.getParams().getFirst(), arg);
+        return execute(mainFuncDef.getBody(), mainEnv);
+
     }
 
-    Object execute(Stmt stmt) {
+    Object execute(Stmt stmt, HashMap<String, Object> env) {
         if (stmt instanceof StmtList) {
             StmtList sl = (StmtList) stmt;
-            Object retVal = execute(sl.getFirst());
+            Object retVal = execute(sl.getFirst(), env);
             if (retVal != null) {
                 return retVal;
             }
             if (sl.getRest() != null) {
-                return execute(sl.getRest());
+                return execute(sl.getRest(), env);
             }
             return null;
         } else if (stmt instanceof DeclStmt) {
             DeclStmt declStmt = (DeclStmt) stmt;
-            env.put(declStmt.getVarName(), evaluate(declStmt.getExpr()));
+            env.put(declStmt.getVarName(), evaluate(declStmt.getExpr(), env));
             return null;
         } else if (stmt instanceof IfStmt) {
             IfStmt ifStmt = (IfStmt) stmt;
-            if (evaluate(ifStmt.getCond())) {
-                return execute(ifStmt.getThenStmt());
+            if (evaluate(ifStmt.getCond(), env)) {
+                return execute(ifStmt.getThenStmt(), env);
             } else if (ifStmt.getElseStmt() != null) {
-                return execute(ifStmt.getElseStmt());
+                return execute(ifStmt.getElseStmt(), env);
             }
             return null;
         } else if (stmt instanceof ReturnStmt) {
             ReturnStmt returnStmt = (ReturnStmt) stmt;
-            return evaluate(returnStmt.getExpr());
+            return evaluate(returnStmt.getExpr(), env);
         } else if (stmt instanceof PrintStmt) {
-            System.out.println(evaluate(((PrintStmt) stmt).getExpr()));
+            System.out.println(evaluate(((PrintStmt) stmt).getExpr(), env));
             return null;
         } else {
             throw new RuntimeException("Unhandled statement type");
         }
     }
 
-    Object evaluate(Expr expr) {
+    Object evaluate(Expr expr, HashMap<String, Object> env) {
         if (expr instanceof ConstExpr) {
             return ((ConstExpr) expr).getValue();
         } else if (expr instanceof IdentExpr) {
             return env.get(((IdentExpr) expr).getVarName());
         } else if (expr instanceof UnaryMinusExpr) {
-            return -1 * (Long) evaluate(((UnaryMinusExpr) expr).getExpr());
+            return -1 * (Long) evaluate(((UnaryMinusExpr) expr).getExpr(), env);
+        } else if (expr instanceof CallExpr) {
+            CallExpr callExpr = (CallExpr) expr;
+            if (callExpr.getFuncName().equals("randomInt")) {
+                long num = (long) evaluate(callExpr.getArgs().getFirst(), env);
+                long result = Math.abs(random.nextLong()) % num;
+                return result;
+            }
+            FuncDef callee = astRoot.getFuncs().lookupFuncDef(callExpr.getFuncName());
+            HashMap<String, Object> calleeEnv = new HashMap<String, Object>();
+            FormalDeclList currFormalList = callee.getParams();
+            ExprList currExprList = callExpr.getArgs();
+            while (currFormalList != null) {
+                calleeEnv.put(currFormalList.getFirst(), evaluate(currExprList.getFirst(), env));
+                currFormalList = currFormalList.getRest();
+                currExprList = currExprList.getRest();
+            }
+            return execute(callee.getBody(), calleeEnv);
         } else if (expr instanceof BinaryExpr) {
             BinaryExpr binaryExpr = (BinaryExpr) expr;
             switch (binaryExpr.getOperator()) {
                 case BinaryExpr.PLUS:
-                    return (Long) evaluate(binaryExpr.getLeftExpr()) + (Long) evaluate(binaryExpr.getRightExpr());
+                    return (Long) evaluate(binaryExpr.getLeftExpr(), env) + (Long) evaluate(binaryExpr.getRightExpr(),
+                            env);
                 case BinaryExpr.MINUS:
-                    return (Long) evaluate(binaryExpr.getLeftExpr()) - (Long) evaluate(binaryExpr.getRightExpr());
+                    return (Long) evaluate(binaryExpr.getLeftExpr(), env) - (Long) evaluate(binaryExpr.getRightExpr(),
+                            env);
                 case BinaryExpr.TIMES:
-                    return (Long) evaluate(binaryExpr.getLeftExpr()) * (Long) evaluate(binaryExpr.getRightExpr());
+                    return (Long) evaluate(binaryExpr.getLeftExpr(), env) * (Long) evaluate(binaryExpr.getRightExpr(),
+                            env);
                 default:
                     throw new RuntimeException("Unhandled operator");
             }
@@ -168,22 +189,26 @@ public class Interpreter {
     }
 
     // evaluate conditional and logical expression
-    boolean evaluate(Cond cond) {
+    boolean evaluate(Cond cond, HashMap<String, Object> env) {
         if (cond instanceof CompCond) {
             CompCond compCond = (CompCond) cond;
             switch (compCond.getOperator()) {
                 case CompCond.EQ:
-                    return (long) evaluate(compCond.getLeftExpr()) == (long) evaluate(compCond.getRightExpr());
+                    return (long) evaluate(compCond.getLeftExpr(), env) == (long) evaluate(compCond.getRightExpr(),
+                            env);
                 case CompCond.NE:
-                    return (long) evaluate(compCond.getLeftExpr()) != (long) evaluate(compCond.getRightExpr());
+                    return (long) evaluate(compCond.getLeftExpr(), env) != (long) evaluate(compCond.getRightExpr(),
+                            env);
                 case CompCond.LT:
-                    return (long) evaluate(compCond.getLeftExpr()) < (long) evaluate(compCond.getRightExpr());
+                    return (long) evaluate(compCond.getLeftExpr(), env) < (long) evaluate(compCond.getRightExpr(), env);
                 case CompCond.LE:
-                    return (long) evaluate(compCond.getLeftExpr()) <= (long) evaluate(compCond.getRightExpr());
+                    return (long) evaluate(compCond.getLeftExpr(), env) <= (long) evaluate(compCond.getRightExpr(),
+                            env);
                 case CompCond.GT:
-                    return (long) evaluate(compCond.getLeftExpr()) > (long) evaluate(compCond.getRightExpr());
+                    return (long) evaluate(compCond.getLeftExpr(), env) > (long) evaluate(compCond.getRightExpr(), env);
                 case CompCond.GE:
-                    return (long) evaluate(compCond.getLeftExpr()) >= (long) evaluate(compCond.getRightExpr());
+                    return (long) evaluate(compCond.getLeftExpr(), env) >= (long) evaluate(compCond.getRightExpr(),
+                            env);
                 default:
                     throw new RuntimeException("Unhandled operator");
             }
@@ -191,11 +216,11 @@ public class Interpreter {
             LogicalCond logicalCond = (LogicalCond) cond;
             switch (logicalCond.getOperator()) {
                 case LogicalCond.AND:
-                    return evaluate(logicalCond.getLeftCond()) && evaluate(logicalCond.getRightCond());
+                    return evaluate(logicalCond.getLeftCond(), env) && evaluate(logicalCond.getRightCond(), env);
                 case LogicalCond.OR:
-                    return evaluate(logicalCond.getLeftCond()) || evaluate(logicalCond.getRightCond());
+                    return evaluate(logicalCond.getLeftCond(), env) || evaluate(logicalCond.getRightCond(), env);
                 case LogicalCond.NOT:
-                    return !evaluate(logicalCond.getLeftCond());
+                    return !evaluate(logicalCond.getLeftCond(), env);
                 default:
                     throw new RuntimeException("Unhandled operator");
             }

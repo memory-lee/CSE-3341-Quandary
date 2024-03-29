@@ -28,13 +28,19 @@ parser code {:
 :};
 
 terminal PLUS, MINUS, LPAREN, RPAREN, RETURN, SEMICOLON, TIMES, UMINUS,
-         INT, LCURLY, RCURLY, ASSIGN, IF, ELSE, PRINT,
+         INT, LCURLY, RCURLY, ASSIGN, IF, ELSE, PRINT, COMMA,
          GE, LE, GT, LT, EQ, NE, AND, OR, NOT;
 terminal Long    INTCONST;
 terminal String   IDENT;
 
 
 non terminal Program         program;
+non terminal FuncDefList     funcDefList;
+non terminal FuncDef         funcDef;
+non terminal FormalDeclList  formalDeclList;
+non terminal FormalDeclList  neFormalDeclList;
+non terminal ExprList        exprList;
+non terminal ExprList        neExprList;
 non terminal Stmt            stmt;
 non terminal StmtList        stmtList;
 non terminal Expr            expr;
@@ -54,10 +60,45 @@ precedence left ELSE;
 
 start with program;
 
-program ::= INT IDENT LPAREN INT IDENT:argName RPAREN LCURLY stmtList:sl RCURLY
-            {: RESULT = new Program(argName, sl, loc(argNameleft, argNameright)); :}
+program ::= funcDefList:fdl
+            {: RESULT = new Program(fdl, loc(fdlleft, fdlright)); :}
+         ;
+      
+funcDefList ::= funcDef:first funcDefList:rest
+            {: RESULT = new FuncDefList(first, rest, loc(firstleft, firstright)); :}
+         | /* empty string */
+            {: RESULT = null; :}
          ;
 
+funcDef ::= INT IDENT:funcName LPAREN formalDeclList:params RPAREN LCURLY stmtList:body RCURLY
+            {: RESULT = new FuncDef(funcName, params, body, loc(funcNameleft, funcNameright)); :}
+         ;
+
+formalDeclList ::= neFormalDeclList:list 
+            {: RESULT = list; :}
+         | /* empty string */
+            {: RESULT = null; :}
+         ;
+
+neFormalDeclList ::= INT IDENT:first COMMA neFormalDeclList:rest
+            {: RESULT = new FormalDeclList(first, rest, loc(firstleft, firstright)); :}
+         | INT IDENT:first
+            {: RESULT = new FormalDeclList(first, null, loc(firstleft, firstright)); :}
+         ;
+
+exprList ::= neExprList:list 
+            {: RESULT = list; :}
+         | /* empty string */
+            {: RESULT = null; :}
+         ;
+
+neExprList ::= expr:first COMMA neExprList:rest
+            {: RESULT = new ExprList(first, rest, loc(firstleft, firstright)); :}
+         | expr:first
+            {: RESULT = new ExprList(first, null, loc(firstleft, firstright)); :}
+         ;
+
+ 
 stmtList ::= stmt:s stmtList:sl
             {: RESULT = new StmtList(s, sl, loc(sleft, sright)); :}
          | /* empty string */
@@ -89,6 +130,8 @@ expr ::= INTCONST:c
       | MINUS expr:e
          {: RESULT = new UnaryMinusExpr(e, loc(eleft, eright)); :}
          %prec UMINUS
+      | IDENT:funcName LPAREN exprList:args RPAREN
+         {: RESULT = new CallExpr(funcName, args, loc(funcNameleft, funcNameright)); :} 
       ;
 
 binaryExpr ::= expr:e1 PLUS expr:e2

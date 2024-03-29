@@ -86,6 +86,7 @@ white_space = {new_line} | [ \t\f]
 
 "return"          { return symbol("return", RETURN); }
 ";"               { return symbol(";",  SEMICOLON); }
+","               { return symbol(",", COMMA); }
 
 
 [_a-zA-Z][_a-zA-Z0-9]* { return symbol("Ident", IDENT, yytext()); }
