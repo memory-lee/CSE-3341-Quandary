@@ -28,7 +28,7 @@ parser code {:
 :};
 
 terminal PLUS, MINUS, LPAREN, RPAREN, RETURN, SEMICOLON, TIMES, UMINUS,
-         INT, LCURLY, RCURLY, ASSIGN, IF, ELSE, PRINT, COMMA, WHILE, MUTABLE, REF, Q,
+         INT, LCURLY, RCURLY, ASSIGN, IF, ELSE, PRINT, COMMA, WHILE, MUTABLE, REF, Q, NIL,
          GE, LE, GT, LT, EQ, NE, AND, OR, NOT;
 terminal Long    INTCONST;
 terminal String   IDENT;
@@ -70,10 +70,36 @@ funcDefList ::= funcDef:first funcDefList:rest
             {: RESULT = null; :}
          ;
 
+
 funcDef ::= INT IDENT:funcName LPAREN formalDeclList:params RPAREN LCURLY stmtList:body RCURLY
+            {: RESULT = new FuncDef(funcName, params, body, loc(funcNameleft, funcNameright)); :}
+         |  REF IDENT:funcName LPAREN formalDeclList:params RPAREN LCURLY stmtList:body RCURLY
+            {: RESULT = new FuncDef(funcName, params, body, loc(funcNameleft, funcNameright)); :}
+         |  Q IDENT:funcName LPAREN formalDeclList:params RPAREN LCURLY stmtList:body RCURLY
+            {: RESULT = new FuncDef(funcName, params, body, loc(funcNameleft, funcNameright)); :}
+         |  MUTABLE INT IDENT:funcName LPAREN formalDeclList:params RPAREN LCURLY stmtList:body RCURLY
+            {: RESULT = new FuncDef(funcName, params, body, loc(funcNameleft, funcNameright)); :}
+         |  MUTABLE REF IDENT:funcName LPAREN formalDeclList:params RPAREN LCURLY stmtList:body RCURLY
+            {: RESULT = new FuncDef(funcName, params, body, loc(funcNameleft, funcNameright)); :}
+         |  MUTABLE Q IDENT:funcName LPAREN formalDeclList:params RPAREN LCURLY stmtList:body RCURLY
             {: RESULT = new FuncDef(funcName, params, body, loc(funcNameleft, funcNameright)); :}
          ;
 
+/*
+varDecl ::= INT IDENT:varName
+            {: RESULT = new VarDecl(varName, false, loc(varNameleft, varNameright)); :}
+         | REF IDENT:varName
+            {: RESULT = new VarDecl(varName, false, loc(varNameleft, varNameright)); :}
+         | Q IDENT:varName
+            {: RESULT = new VarDecl(varName, false, loc(varNameleft, varNameright)); :}
+         | MUTABLE INT IDENT:varName
+            {: RESULT = new VarDecl(varName, true, loc(varNameleft, varNameright)); :} 
+         | MUTABLE REF IDENT:varName
+            {: RESULT = new VarDecl(varName, true, loc(varNameleft, varNameright)); :}
+         | MUTABLE Q IDENT:varName
+            {: RESULT = new VarDecl(varName, true, loc(varNameleft, varNameright)); :}
+         ;
+*/
 
 formalDeclList ::= neFormalDeclList:list 
             {: RESULT = list; :}
@@ -82,8 +108,28 @@ formalDeclList ::= neFormalDeclList:list
          ;
 
 neFormalDeclList ::= INT IDENT:first COMMA neFormalDeclList:rest
+            {: RESULT = new FormalDeclList(first, rest, loc(firstleft, firstright)); :}      
+         | REF IDENT:first COMMA neFormalDeclList:rest
+            {: RESULT = new FormalDeclList(first, rest, loc(firstleft, firstright)); :}
+         | Q IDENT:first COMMA neFormalDeclList:rest
+            {: RESULT = new FormalDeclList(first, rest, loc(firstleft, firstright)); :}
+         | MUTABLE INT IDENT:first COMMA neFormalDeclList:rest
+            {: RESULT = new FormalDeclList(first, rest, loc(firstleft, firstright)); :}
+         | MUTABLE REF IDENT:first COMMA neFormalDeclList:rest
+            {: RESULT = new FormalDeclList(first, rest, loc(firstleft, firstright)); :}
+         | MUTABLE Q IDENT:first COMMA neFormalDeclList:rest
             {: RESULT = new FormalDeclList(first, rest, loc(firstleft, firstright)); :}
          | INT IDENT:first
+            {: RESULT = new FormalDeclList(first, null, loc(firstleft, firstright)); :}
+         | REF IDENT:first
+            {: RESULT = new FormalDeclList(first, null, loc(firstleft, firstright)); :}
+         | Q IDENT:first
+            {: RESULT = new FormalDeclList(first, null, loc(firstleft, firstright)); :}
+         | MUTABLE INT IDENT:first
+            {: RESULT = new FormalDeclList(first, null, loc(firstleft, firstright)); :}
+         | MUTABLE REF IDENT:first
+            {: RESULT = new FormalDeclList(first, null, loc(firstleft, firstright)); :}
+         | MUTABLE Q IDENT:first
             {: RESULT = new FormalDeclList(first, null, loc(firstleft, firstright)); :}
          ;
 
@@ -110,6 +156,18 @@ stmt ::= RETURN expr:e SEMICOLON
             {: RESULT = new ReturnStmt(e, loc(eleft, eright)); :}
          | INT IDENT:varName ASSIGN expr:e SEMICOLON
             {: RESULT = new DeclStmt(varName, e, loc(varNameleft, varNameright)); :}
+         | REF IDENT:varName ASSIGN expr:e SEMICOLON
+            {: RESULT = new DeclStmt(varName, e, loc(varNameleft, varNameright)); :}
+         | Q IDENT:varName ASSIGN expr:e SEMICOLON
+            {: RESULT = new DeclStmt(varName, e, loc(varNameleft, varNameright)); :}
+         | MUTABLE INT IDENT:varName ASSIGN expr:e SEMICOLON
+            {: RESULT = new DeclStmt(varName, e, loc(varNameleft, varNameright)); :}
+         | MUTABLE REF IDENT:varName ASSIGN expr:e SEMICOLON
+            {: RESULT = new DeclStmt(varName, e, loc(varNameleft, varNameright)); :}
+         | MUTABLE Q IDENT:varName ASSIGN expr:e SEMICOLON
+            {: RESULT = new DeclStmt(varName, e, loc(varNameleft, varNameright)); :}
+         | IDENT:varName ASSIGN expr:e SEMICOLON
+            {: RESULT = new AssignStmt(varName, e, loc(varNameleft, varNameright)); :}
          | IF LPAREN cond:c RPAREN stmt:s
             {: RESULT = new IfStmt(c, s, null, loc(cleft, cright)); :}
          | IF LPAREN cond:c RPAREN stmt:s1 ELSE stmt:s2
@@ -122,9 +180,11 @@ stmt ::= RETURN expr:e SEMICOLON
             {: RESULT = new WhileStmt(c, s, loc(cleft, cright)); :}
          ;
 
-expr ::= INTCONST:c
+expr ::= NIL:n
+         {: RESULT = new NilExpr(loc(nleft, nright)); :}
+      |  INTCONST:c
          {: RESULT = new ConstExpr(c, loc(cleft, cright)); :}
-      | IDENT:varName
+      |  IDENT:varName
          {: RESULT = new IdentExpr(varName, loc(varNameleft, varNameright)); :}
       |  binaryExpr:e
          {: RESULT = e; :}
@@ -133,7 +193,7 @@ expr ::= INTCONST:c
       |  MINUS expr:e
          {: RESULT = new UnaryMinusExpr(e, loc(eleft, eright)); :}
          %prec UMINUS
-      | IDENT:funcName LPAREN exprList:args RPAREN
+      |  IDENT:funcName LPAREN exprList:args RPAREN
          {: RESULT = new CallExpr(funcName, args, loc(funcNameleft, funcNameright)); :} 
       ;
 

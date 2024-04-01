@@ -151,6 +151,11 @@ public class Interpreter {
                 }
             }
             return null;
+        } else if (stmt instanceof AssignStmt) {
+            AssignStmt assignStmt = (AssignStmt) stmt;
+            QVal newValue = evaluate(assignStmt.getExpr(), env);
+            env.put(assignStmt.getVarName(), newValue);
+            return null;
         } else {
             throw new RuntimeException("Unhandled statement type");
         }
@@ -194,6 +199,8 @@ public class Interpreter {
                 default:
                     throw new RuntimeException("Unhandled operator");
             }
+        } else if (expr instanceof NilExpr) {
+            return new QRef(null);
         } else {
             throw new RuntimeException("Unhandled Expr type");
         }
