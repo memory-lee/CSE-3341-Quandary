@@ -2,14 +2,14 @@ package ast;
 
 public class ConstExpr extends Expr {
 
-    final Object value;
+    final QVal value;
 
     public ConstExpr(long value, Location loc) {
         super(loc);
-        this.value = value;
+        this.value = new QInt(value);
     }
 
-    public Object getValue() {
+    public QVal getValue() {
         return value;
     }
 

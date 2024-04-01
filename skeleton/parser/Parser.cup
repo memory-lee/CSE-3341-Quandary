@@ -28,7 +28,7 @@ parser code {:
 :};
 
 terminal PLUS, MINUS, LPAREN, RPAREN, RETURN, SEMICOLON, TIMES, UMINUS,
-         INT, LCURLY, RCURLY, ASSIGN, IF, ELSE, PRINT, COMMA, WHILE,
+         INT, LCURLY, RCURLY, ASSIGN, IF, ELSE, PRINT, COMMA, WHILE, MUTABLE, REF, Q,
          GE, LE, GT, LT, EQ, NE, AND, OR, NOT;
 terminal Long    INTCONST;
 terminal String   IDENT;
@@ -73,6 +73,7 @@ funcDefList ::= funcDef:first funcDefList:rest
 funcDef ::= INT IDENT:funcName LPAREN formalDeclList:params RPAREN LCURLY stmtList:body RCURLY
             {: RESULT = new FuncDef(funcName, params, body, loc(funcNameleft, funcNameright)); :}
          ;
+
 
 formalDeclList ::= neFormalDeclList:list 
             {: RESULT = list; :}
@@ -129,7 +130,7 @@ expr ::= INTCONST:c
          {: RESULT = e; :}
       |  LPAREN expr:e RPAREN
          {: RESULT = e; :}
-      | MINUS expr:e
+      |  MINUS expr:e
          {: RESULT = new UnaryMinusExpr(e, loc(eleft, eright)); :}
          %prec UMINUS
       | IDENT:funcName LPAREN exprList:args RPAREN

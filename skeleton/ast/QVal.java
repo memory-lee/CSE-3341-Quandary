@@ -1,5 +1,5 @@
 package ast;
 
-abstract class QVal {
+public abstract class QVal {
 
 }

@@ -8,4 +8,13 @@ public class QInt extends QVal {
         this.val = val;
     }
 
+    public long getVal() {
+        return val;
+    }
+
+    @Override
+    public String toString() {
+        return Long.toString(this.val);
+    }
+
 }

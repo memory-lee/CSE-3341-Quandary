@@ -68,6 +68,8 @@ white_space = {new_line} | [ \t\f]
 ")"               { return symbol(")",  RPAREN); }
 
 "int"             { return symbol("int", INT); }
+
+"mutable"         { return symbol("mutable", MUTABLE); }
 "{"               { return symbol("{",  LCURLY); }
 "}"               { return symbol("}",  RCURLY); }
 "="               { return symbol("=",  ASSIGN); }

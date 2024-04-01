@@ -26,4 +26,9 @@ public class QObj {
         this.right = right;
     }
 
+    @Override
+    public String toString() {
+        return "(" + this.left.toString() + " . " + this.right.toString() + ")";
+    }
+
 }

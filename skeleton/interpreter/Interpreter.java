@@ -104,16 +104,16 @@ public class Interpreter {
 
     Object executeRoot(Program astRoot, long arg) {
         FuncDef mainFuncDef = astRoot.getFuncs().lookupFuncDef("main");
-        HashMap<String, Object> mainEnv = new HashMap<String, Object>();
-        mainEnv.put(mainFuncDef.getParams().getFirst(), arg);
+        HashMap<String, QVal> mainEnv = new HashMap<String, QVal>();
+        mainEnv.put(mainFuncDef.getParams().getFirst(), new QInt(arg));
         return execute(mainFuncDef.getBody(), mainEnv);
 
     }
 
-    Object execute(Stmt stmt, HashMap<String, Object> env) {
+    QVal execute(Stmt stmt, HashMap<String, QVal> env) {
         if (stmt instanceof StmtList) {
             StmtList sl = (StmtList) stmt;
-            Object retVal = execute(sl.getFirst(), env);
+            QVal retVal = execute(sl.getFirst(), env);
             if (retVal != null) {
                 return retVal;
             }
@@ -145,7 +145,7 @@ public class Interpreter {
              */
             WhileStmt whileStmt = (WhileStmt) stmt;
             while (evaluate(whileStmt.getCond(), env)) {
-                Object retValue = execute(whileStmt.getStmt(), env);
+                QVal retValue = execute(whileStmt.getStmt(), env);
                 if (retValue != null) {
                     return retValue;
                 }
@@ -156,22 +156,22 @@ public class Interpreter {
         }
     }
 
-    Object evaluate(Expr expr, HashMap<String, Object> env) {
+    QVal evaluate(Expr expr, HashMap<String, QVal> env) {
         if (expr instanceof ConstExpr) {
             return ((ConstExpr) expr).getValue();
         } else if (expr instanceof IdentExpr) {
             return env.get(((IdentExpr) expr).getVarName());
         } else if (expr instanceof UnaryMinusExpr) {
-            return -1 * (Long) evaluate(((UnaryMinusExpr) expr).getExpr(), env);
+            return new QInt(-((QInt) evaluate(((UnaryMinusExpr) expr).getExpr(), env)).getVal());
         } else if (expr instanceof CallExpr) {
             CallExpr callExpr = (CallExpr) expr;
             if (callExpr.getFuncName().equals("randomInt")) {
-                long num = (long) evaluate(callExpr.getArgs().getFirst(), env);
+                long num = ((QInt) evaluate(callExpr.getArgs().getFirst(), env)).getVal();
                 long result = Math.abs(random.nextLong()) % num;
-                return result;
+                return new QInt(result);
             }
             FuncDef callee = astRoot.getFuncs().lookupFuncDef(callExpr.getFuncName());
-            HashMap<String, Object> calleeEnv = new HashMap<String, Object>();
+            HashMap<String, QVal> calleeEnv = new HashMap<>();
             FormalDeclList currFormalList = callee.getParams();
             ExprList currExprList = callExpr.getArgs();
             while (currFormalList != null) {
@@ -182,16 +182,15 @@ public class Interpreter {
             return execute(callee.getBody(), calleeEnv);
         } else if (expr instanceof BinaryExpr) {
             BinaryExpr binaryExpr = (BinaryExpr) expr;
+            long leftVal = ((QInt) evaluate(binaryExpr.getLeftExpr(), env)).getVal();
+            long rightVal = ((QInt) evaluate(binaryExpr.getRightExpr(), env)).getVal();
             switch (binaryExpr.getOperator()) {
                 case BinaryExpr.PLUS:
-                    return (Long) evaluate(binaryExpr.getLeftExpr(), env) + (Long) evaluate(binaryExpr.getRightExpr(),
-                            env);
+                    return new QInt(leftVal + rightVal);
                 case BinaryExpr.MINUS:
-                    return (Long) evaluate(binaryExpr.getLeftExpr(), env) - (Long) evaluate(binaryExpr.getRightExpr(),
-                            env);
+                    return new QInt(leftVal - rightVal);
                 case BinaryExpr.TIMES:
-                    return (Long) evaluate(binaryExpr.getLeftExpr(), env) * (Long) evaluate(binaryExpr.getRightExpr(),
-                            env);
+                    return new QInt(leftVal * rightVal);
                 default:
                     throw new RuntimeException("Unhandled operator");
             }
@@ -201,26 +200,24 @@ public class Interpreter {
     }
 
     // evaluate conditional and logical expression
-    boolean evaluate(Cond cond, HashMap<String, Object> env) {
+    boolean evaluate(Cond cond, HashMap<String, QVal> env) {
         if (cond instanceof CompCond) {
             CompCond compCond = (CompCond) cond;
+            long leftVal = ((QInt) evaluate(compCond.getLeftExpr(), env)).getVal();
+            long rightVal = ((QInt) evaluate(compCond.getRightExpr(), env)).getVal();
             switch (compCond.getOperator()) {
                 case CompCond.EQ:
-                    return (long) evaluate(compCond.getLeftExpr(), env) == (long) evaluate(compCond.getRightExpr(),
-                            env);
+                    return leftVal == rightVal;
                 case CompCond.NE:
-                    return (long) evaluate(compCond.getLeftExpr(), env) != (long) evaluate(compCond.getRightExpr(),
-                            env);
+                    return leftVal != rightVal;
                 case CompCond.LT:
-                    return (long) evaluate(compCond.getLeftExpr(), env) < (long) evaluate(compCond.getRightExpr(), env);
+                    return leftVal < rightVal;
                 case CompCond.LE:
-                    return (long) evaluate(compCond.getLeftExpr(), env) <= (long) evaluate(compCond.getRightExpr(),
-                            env);
+                    return leftVal <= rightVal;
                 case CompCond.GT:
-                    return (long) evaluate(compCond.getLeftExpr(), env) > (long) evaluate(compCond.getRightExpr(), env);
+                    return leftVal > rightVal;
                 case CompCond.GE:
-                    return (long) evaluate(compCond.getLeftExpr(), env) >= (long) evaluate(compCond.getRightExpr(),
-                            env);
+                    return leftVal >= rightVal;
                 default:
                     throw new RuntimeException("Unhandled operator");
             }
