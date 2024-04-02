@@ -27,7 +27,7 @@ parser code {:
 
 :};
 
-terminal PLUS, MINUS, LPAREN, RPAREN, RETURN, SEMICOLON, TIMES, UMINUS,
+terminal PLUS, MINUS, LPAREN, RPAREN, RETURN, SEMICOLON, TIMES, UMINUS, DOT,
          INT, LCURLY, RCURLY, ASSIGN, IF, ELSE, PRINT, COMMA, WHILE, MUTABLE, REF, Q, NIL,
          GE, LE, GT, LT, EQ, NE, AND, OR, NOT;
 terminal Long    INTCONST;
@@ -51,6 +51,7 @@ precedence left OR;
 precedence left AND;
 precedence left NOT;
 precedence left GE, LE, GT, LT, EQ, NE;
+precedence left DOT;
 precedence left PLUS, MINUS;
 precedence left TIMES;
 precedence left UMINUS;
@@ -203,6 +204,8 @@ binaryExpr ::= expr:e1 PLUS expr:e2
                {: RESULT = new BinaryExpr(e1, BinaryExpr.MINUS, e2, loc(e1left, e1right)); :}
             |  expr:e1 TIMES expr:e2
                {: RESULT = new BinaryExpr(e1, BinaryExpr.TIMES, e2, loc(e1left, e1right)); :}
+            |  expr:e1 DOT expr:e2
+               {: RESULT = new BinaryExpr(e1, BinaryExpr.DOT, e2, loc(e1left, e1right)); :}
             ;
 
 cond ::= expr:e1 LE expr:e2

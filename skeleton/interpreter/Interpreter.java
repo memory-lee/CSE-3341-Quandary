@@ -162,7 +162,9 @@ public class Interpreter {
     }
 
     QVal evaluate(Expr expr, HashMap<String, QVal> env) {
-        if (expr instanceof ConstExpr) {
+        if (expr instanceof NilExpr) {
+            return new QRef(null);
+        } else if (expr instanceof ConstExpr) {
             return ((ConstExpr) expr).getValue();
         } else if (expr instanceof IdentExpr) {
             return env.get(((IdentExpr) expr).getVarName());
@@ -174,6 +176,34 @@ public class Interpreter {
                 long num = ((QInt) evaluate(callExpr.getArgs().getFirst(), env)).getVal();
                 long result = Math.abs(random.nextLong()) % num;
                 return new QInt(result);
+            } else if (callExpr.getFuncName().equals("isNil")) {
+                /**
+                 * isNil() implementation. It returns 1 if the argument is nil.
+                 */
+                QVal val = evaluate(callExpr.getArgs().getFirst(), env);
+                return new QInt(val instanceof QRef && ((QRef) val).isNil() ? 1 : 0);
+            } else if (callExpr.getFuncName().equals("isAtom")) {
+                /*
+                 * isAtom() implementation. It returns 1 if the argument is an int or nil.
+                 */
+                QVal val = evaluate(callExpr.getArgs().getFirst(), env);
+                if (val instanceof QInt) {
+                    return new QInt(1);
+                } else if (val instanceof QRef) {
+                    return new QInt(((QRef) val).isNil() ? 1 : 0);
+                } else {
+                    return new QInt(0);
+                }
+            } else if (callExpr.getFuncName().equals("left")) {
+                QVal val = evaluate(callExpr.getArgs().getFirst(), env);
+                QRef ref = (QRef) val;
+                QObj obj = (QObj) ref.getReferent();
+                return obj.getLeft();
+            } else if (callExpr.getFuncName().equals("right")) {
+                QVal val = evaluate(callExpr.getArgs().getFirst(), env);
+                QRef ref = (QRef) val;
+                QObj obj = (QObj) ref.getReferent();
+                return obj.getRight();
             }
             FuncDef callee = astRoot.getFuncs().lookupFuncDef(callExpr.getFuncName());
             HashMap<String, QVal> calleeEnv = new HashMap<>();
@@ -187,20 +217,27 @@ public class Interpreter {
             return execute(callee.getBody(), calleeEnv);
         } else if (expr instanceof BinaryExpr) {
             BinaryExpr binaryExpr = (BinaryExpr) expr;
-            long leftVal = ((QInt) evaluate(binaryExpr.getLeftExpr(), env)).getVal();
-            long rightVal = ((QInt) evaluate(binaryExpr.getRightExpr(), env)).getVal();
+            QVal leftVal = evaluate(binaryExpr.getLeftExpr(), env);
+            QVal rightVal = evaluate(binaryExpr.getRightExpr(), env);
             switch (binaryExpr.getOperator()) {
                 case BinaryExpr.PLUS:
-                    return new QInt(leftVal + rightVal);
+                    return new QInt(((QInt) leftVal).getVal() + ((QInt) rightVal).getVal());
                 case BinaryExpr.MINUS:
-                    return new QInt(leftVal - rightVal);
+                    return new QInt(((QInt) leftVal).getVal() - ((QInt) rightVal).getVal());
                 case BinaryExpr.TIMES:
-                    return new QInt(leftVal * rightVal);
+                    return new QInt(((QInt) leftVal).getVal() * ((QInt) rightVal).getVal());
+                case BinaryExpr.DOT:
+                    /**
+                     * DOT expression implementation
+                     * TODO:
+                     * It only supports dot expression such as (1 . 1), (2. 1).
+                     * It does not support nested dot expression such as (1 . nil).
+                     */
+                    QObj obj = new QObj(leftVal, rightVal);
+                    return new QRef(obj);
                 default:
                     throw new RuntimeException("Unhandled operator");
             }
-        } else if (expr instanceof NilExpr) {
-            return new QRef(null);
         } else {
             throw new RuntimeException("Unhandled Expr type");
         }
