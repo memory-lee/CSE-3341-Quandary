@@ -141,7 +141,7 @@ public class Interpreter {
             return null;
         } else if (stmt instanceof WhileStmt) {
             /**
-             * The while loop statement now working properly.
+             * Update: The while loop statement now working properly.
              */
             WhileStmt whileStmt = (WhileStmt) stmt;
             while (evaluate(whileStmt.getCond(), env)) {
@@ -192,7 +192,7 @@ public class Interpreter {
                 return obj.getRight();
             }
             /**
-             * The setLeft and setRight function are now working.
+             * Update: The setLeft and setRight function are now working.
              */
             else if (callStmt.getFuncName().equals("setLeft")) {
                 QVal val = evaluate(callStmt.getArgs().getFirst(), env);
@@ -248,7 +248,7 @@ public class Interpreter {
                 return new QInt(result);
             } else if (callExpr.getFuncName().equals("isNil")) {
                 /**
-                 * isNil() implementation. It returns 1 if the argument is nil.
+                 * * isNil() implementation. It returns 1 if the argument is nil.
                  */
                 QVal val = evaluate(callExpr.getArgs().getFirst(), env);
                 return new QInt(val instanceof QRef && ((QRef) val).isNil() ? 1 : 0);
@@ -321,9 +321,8 @@ public class Interpreter {
                 case BinaryExpr.DOT:
                     /**
                      * DOT expression implementation
-                     * TODO:
-                     * It only supports dot expression such as (1 . 1), (2. 1).
-                     * It does not support nested dot expression such as (1 . nil).
+                     * Update: The DOT expression is now working fine with nil value in either left
+                     * or right.
                      */
                     QObj obj = new QObj(leftVal, rightVal);
                     return new QRef(obj);
