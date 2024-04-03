@@ -141,7 +141,7 @@ public class Interpreter {
             return null;
         } else if (stmt instanceof WhileStmt) {
             /**
-             * !The while loop statement here won't function as expected.
+             * The while loop statement now working properly.
              */
             WhileStmt whileStmt = (WhileStmt) stmt;
             while (evaluate(whileStmt.getCond(), env)) {
@@ -157,10 +157,6 @@ public class Interpreter {
             env.put(assignStmt.getVarName(), newValue);
             return null;
         } else if (stmt instanceof CallStmt) {
-            /**
-             * !Not sure the implementation of CallStmt is correct or not.
-             */
-
             CallStmt callStmt = (CallStmt) stmt;
             if (callStmt.getFuncName().equals("randomInt")) {
                 long num = ((QInt) evaluate(callStmt.getArgs().getFirst(), env)).getVal();
@@ -168,13 +164,13 @@ public class Interpreter {
                 return new QInt(result);
             } else if (callStmt.getFuncName().equals("isNil")) {
                 /**
-                 * isNil() implementation. It returns 1 if the argument is nil.
+                 * * isNil() implementation. It returns 1 if the argument is nil.
                  */
                 QVal val = evaluate(callStmt.getArgs().getFirst(), env);
                 return new QInt(val instanceof QRef && ((QRef) val).isNil() ? 1 : 0);
             } else if (callStmt.getFuncName().equals("isAtom")) {
-                /*
-                 * isAtom() implementation. It returns 1 if the argument is an int or nil.
+                /**
+                 * * isAtom() implementation. It returns 1 if the argument is an int or nil.
                  */
                 QVal val = evaluate(callStmt.getArgs().getFirst(), env);
                 if (val instanceof QInt) {
@@ -196,7 +192,7 @@ public class Interpreter {
                 return obj.getRight();
             }
             /**
-             * ! The setLeft and setRight function are not working.
+             * The setLeft and setRight function are now working.
              */
             else if (callStmt.getFuncName().equals("setLeft")) {
                 QVal val = evaluate(callStmt.getArgs().getFirst(), env);
@@ -280,7 +276,7 @@ public class Interpreter {
                 return obj.getRight();
             } else if (callExpr.getFuncName().equals("setLeft")) {
                 /**
-                 * *Sets the left field of the object referenced by r to value, and returns 1
+                 * * Sets the left field of the object referenced by r to value, and returns 1
                  */
                 QVal val = evaluate(callExpr.getArgs().getFirst(), env);
                 QRef ref = (QRef) val;
@@ -291,7 +287,7 @@ public class Interpreter {
                 return new QInt(1);
             } else if (callExpr.getFuncName().equals("setRight")) {
                 /**
-                 * *Sets the right field of the object referenced by r to value, and returns 1
+                 * * Sets the right field of the object referenced by r to value, and returns 1
                  */
                 QVal val = evaluate(callExpr.getArgs().getFirst(), env);
                 QRef ref = (QRef) val;
