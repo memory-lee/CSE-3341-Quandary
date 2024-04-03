@@ -11,8 +11,6 @@ mutable Ref swap(Ref c) {
 }
 
 mutable Q swapAndGetLeft(Ref c) {
-    Q tmp = left(c);
-    setLeft(c, right(c));
-    setRight(c, tmp);
+    swap(c);
     return left(c);
 }  

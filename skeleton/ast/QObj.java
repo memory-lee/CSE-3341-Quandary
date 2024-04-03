@@ -28,7 +28,13 @@ public class QObj {
 
     @Override
     public String toString() {
-        return "(" + this.left.toString() + " . " + this.right.toString() + ")";
+        if (this.left == null) {
+            return "(" + "nil" + " . " + this.right.toString() + ")";
+        } else if (this.right == null) {
+            return "(" + this.left.toString() + " . " + "nil" + ")";
+        } else {
+            return "(" + this.left.toString() + " . " + this.right.toString() + ")";
+        }
     }
 
 }

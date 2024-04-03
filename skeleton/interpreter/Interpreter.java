@@ -224,7 +224,12 @@ public class Interpreter {
                 currFormalList = currFormalList.getRest();
                 currExprList = currExprList.getRest();
             }
-            return execute(callee.getBody(), calleeEnv);
+            /**
+             * interpreter should handle call statements by ignoring the return value of the
+             * callee, not by returning the value from the caller.
+             */
+            execute(callee.getBody(), calleeEnv);
+            return null;
         } else {
             throw new RuntimeException("Unhandled statement type");
         }
