@@ -278,26 +278,28 @@ public class Interpreter {
                 QRef ref = (QRef) val;
                 QObj obj = (QObj) ref.getReferent();
                 return obj.getRight();
-            }
-            /**
-             * ! The setLeft and setRight function are not working.
-             */
-            else if (callExpr.getFuncName().equals("setLeft")) {
+            } else if (callExpr.getFuncName().equals("setLeft")) {
+                /**
+                 * *Sets the left field of the object referenced by r to value, and returns 1
+                 */
                 QVal val = evaluate(callExpr.getArgs().getFirst(), env);
                 QRef ref = (QRef) val;
                 QObj obj = (QObj) ref.getReferent();
 
                 QVal val2 = evaluate(callExpr.getArgs().getRest().getFirst(), env);
                 obj.setLeft(val2);
-                return null;
+                return new QInt(1);
             } else if (callExpr.getFuncName().equals("setRight")) {
+                /**
+                 * *Sets the right field of the object referenced by r to value, and returns 1
+                 */
                 QVal val = evaluate(callExpr.getArgs().getFirst(), env);
                 QRef ref = (QRef) val;
                 QObj obj = (QObj) ref.getReferent();
 
                 QVal val2 = evaluate(callExpr.getArgs().getRest().getFirst(), env);
                 obj.setRight(val2);
-                return null;
+                return new QInt(1);
             }
             FuncDef callee = astRoot.getFuncs().lookupFuncDef(callExpr.getFuncName());
             HashMap<String, QVal> calleeEnv = new HashMap<>();
