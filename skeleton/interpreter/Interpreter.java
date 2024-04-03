@@ -156,6 +156,75 @@ public class Interpreter {
             QVal newValue = evaluate(assignStmt.getExpr(), env);
             env.put(assignStmt.getVarName(), newValue);
             return null;
+        } else if (stmt instanceof CallStmt) {
+            /**
+             * !Not sure the implementation of CallStmt is correct or not.
+             */
+
+            CallStmt callStmt = (CallStmt) stmt;
+            if (callStmt.getFuncName().equals("randomInt")) {
+                long num = ((QInt) evaluate(callStmt.getArgs().getFirst(), env)).getVal();
+                long result = Math.abs(random.nextLong()) % num;
+                return new QInt(result);
+            } else if (callStmt.getFuncName().equals("isNil")) {
+                /**
+                 * isNil() implementation. It returns 1 if the argument is nil.
+                 */
+                QVal val = evaluate(callStmt.getArgs().getFirst(), env);
+                return new QInt(val instanceof QRef && ((QRef) val).isNil() ? 1 : 0);
+            } else if (callStmt.getFuncName().equals("isAtom")) {
+                /*
+                 * isAtom() implementation. It returns 1 if the argument is an int or nil.
+                 */
+                QVal val = evaluate(callStmt.getArgs().getFirst(), env);
+                if (val instanceof QInt) {
+                    return new QInt(1);
+                } else if (val instanceof QRef) {
+                    return new QInt(((QRef) val).isNil() ? 1 : 0);
+                } else {
+                    return new QInt(0);
+                }
+            } else if (callStmt.getFuncName().equals("left")) {
+                QVal val = evaluate(callStmt.getArgs().getFirst(), env);
+                QRef ref = (QRef) val;
+                QObj obj = (QObj) ref.getReferent();
+                return obj.getLeft();
+            } else if (callStmt.getFuncName().equals("right")) {
+                QVal val = evaluate(callStmt.getArgs().getFirst(), env);
+                QRef ref = (QRef) val;
+                QObj obj = (QObj) ref.getReferent();
+                return obj.getRight();
+            }
+            /**
+             * ! The setLeft and setRight function are not working.
+             */
+            else if (callStmt.getFuncName().equals("setLeft")) {
+                QVal val = evaluate(callStmt.getArgs().getFirst(), env);
+                QRef ref = (QRef) val;
+                QObj obj = (QObj) ref.getReferent();
+
+                QVal val2 = evaluate(callStmt.getArgs().getRest().getFirst(), env);
+                obj.setLeft(val2);
+                return null;
+            } else if (callStmt.getFuncName().equals("setRight")) {
+                QVal val = evaluate(callStmt.getArgs().getFirst(), env);
+                QRef ref = (QRef) val;
+                QObj obj = (QObj) ref.getReferent();
+
+                QVal val2 = evaluate(callStmt.getArgs().getRest().getFirst(), env);
+                obj.setRight(val2);
+                return null;
+            }
+            FuncDef callee = astRoot.getFuncs().lookupFuncDef(callStmt.getFuncName());
+            HashMap<String, QVal> calleeEnv = new HashMap<>();
+            FormalDeclList currFormalList = callee.getParams();
+            ExprList currExprList = callStmt.getArgs();
+            while (currFormalList != null) {
+                calleeEnv.put(currFormalList.getFirst(), evaluate(currExprList.getFirst(), env));
+                currFormalList = currFormalList.getRest();
+                currExprList = currExprList.getRest();
+            }
+            return execute(callee.getBody(), calleeEnv);
         } else {
             throw new RuntimeException("Unhandled statement type");
         }
@@ -204,6 +273,26 @@ public class Interpreter {
                 QRef ref = (QRef) val;
                 QObj obj = (QObj) ref.getReferent();
                 return obj.getRight();
+            }
+            /**
+             * ! The setLeft and setRight function are not working.
+             */
+            else if (callExpr.getFuncName().equals("setLeft")) {
+                QVal val = evaluate(callExpr.getArgs().getFirst(), env);
+                QRef ref = (QRef) val;
+                QObj obj = (QObj) ref.getReferent();
+
+                QVal val2 = evaluate(callExpr.getArgs().getRest().getFirst(), env);
+                obj.setLeft(val2);
+                return null;
+            } else if (callExpr.getFuncName().equals("setRight")) {
+                QVal val = evaluate(callExpr.getArgs().getFirst(), env);
+                QRef ref = (QRef) val;
+                QObj obj = (QObj) ref.getReferent();
+
+                QVal val2 = evaluate(callExpr.getArgs().getRest().getFirst(), env);
+                obj.setRight(val2);
+                return null;
             }
             FuncDef callee = astRoot.getFuncs().lookupFuncDef(callExpr.getFuncName());
             HashMap<String, QVal> calleeEnv = new HashMap<>();

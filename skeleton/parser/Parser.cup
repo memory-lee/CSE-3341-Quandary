@@ -179,6 +179,8 @@ stmt ::= RETURN expr:e SEMICOLON
             {: RESULT = sl; :}
          | WHILE LPAREN cond:c RPAREN stmt:s
             {: RESULT = new WhileStmt(c, s, loc(cleft, cright)); :}
+         | IDENT:funcName LPAREN exprList:args RPAREN SEMICOLON
+            {: RESULT = new CallStmt(funcName, args, loc(funcNameleft, funcNameright)); :}
          ;
 
 expr ::= NIL:n
@@ -196,6 +198,12 @@ expr ::= NIL:n
          %prec UMINUS
       |  IDENT:funcName LPAREN exprList:args RPAREN
          {: RESULT = new CallExpr(funcName, args, loc(funcNameleft, funcNameright)); :} 
+      |  LPAREN INT RPAREN expr:e
+         {: RESULT = e; :}
+      |  LPAREN Q RPAREN expr:e
+         {: RESULT = e; :}
+      |  LPAREN REF RPAREN expr:e
+         {: RESULT = e; :}
       ;
 
 binaryExpr ::= expr:e1 PLUS expr:e2
