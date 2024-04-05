@@ -86,22 +86,6 @@ funcDef ::= INT IDENT:funcName LPAREN formalDeclList:params RPAREN LCURLY stmtLi
             {: RESULT = new FuncDef(funcName, params, body, loc(funcNameleft, funcNameright)); :}
          ;
 
-/*
-varDecl ::= INT IDENT:varName
-            {: RESULT = new VarDecl(varName, false, loc(varNameleft, varNameright)); :}
-         | REF IDENT:varName
-            {: RESULT = new VarDecl(varName, false, loc(varNameleft, varNameright)); :}
-         | Q IDENT:varName
-            {: RESULT = new VarDecl(varName, false, loc(varNameleft, varNameright)); :}
-         | MUTABLE INT IDENT:varName
-            {: RESULT = new VarDecl(varName, true, loc(varNameleft, varNameright)); :} 
-         | MUTABLE REF IDENT:varName
-            {: RESULT = new VarDecl(varName, true, loc(varNameleft, varNameright)); :}
-         | MUTABLE Q IDENT:varName
-            {: RESULT = new VarDecl(varName, true, loc(varNameleft, varNameright)); :}
-         ;
-*/
-
 formalDeclList ::= neFormalDeclList:list 
             {: RESULT = list; :}
          | /* empty string */
