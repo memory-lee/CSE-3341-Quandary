@@ -29,6 +29,7 @@ parser code {:
 
 terminal PLUS, MINUS, LPAREN, RPAREN, RETURN, SEMICOLON, TIMES, UMINUS, DOT,
          INT, LCURLY, RCURLY, ASSIGN, IF, ELSE, PRINT, COMMA, WHILE, MUTABLE, REF, Q, NIL,
+         LBRACKET, RBRACKET,
          GE, LE, GT, LT, EQ, NE, AND, OR, NOT;
 terminal Long    INTCONST;
 terminal String   IDENT;

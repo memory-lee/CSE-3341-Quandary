@@ -68,6 +68,9 @@ white_space = {new_line} | [ \t\f]
 
 "("               { return symbol("(",  LPAREN); }
 ")"               { return symbol(")",  RPAREN); }
+"["               { return symbol("[",  LBRACKET); }
+"]"               { return symbol("]",  RBRACKET); }
+
 
 "mutable"         { return symbol("mutable", MUTABLE); }
 "int"             { return symbol("int", INT); }
