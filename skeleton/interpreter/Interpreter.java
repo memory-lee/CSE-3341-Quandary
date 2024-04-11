@@ -329,7 +329,57 @@ public class Interpreter {
                 default:
                     throw new RuntimeException("Unhandled operator");
             }
-        } else {
+        } else if (expr instanceof ConcurrentBinaryExpr) {
+            ConcurrentBinaryExpr concurrentBinaryExpr = (ConcurrentBinaryExpr) expr;
+            /*
+             * !Evaluate the left and right expressions in two different threads
+             */
+            // Final holder for thread result
+            final QVal[] results = new QVal[2];
+            // Create the first thread for leftVal
+            Thread leftThread = new Thread(() -> {
+                results[0] = evaluate(concurrentBinaryExpr.getLeftExpr(), env);
+            });
+            // Create the second thread for rightVal
+            Thread rightThread = new Thread(() -> {
+                results[1] = evaluate(concurrentBinaryExpr.getRightExpr(), env);
+            });
+            // Start the threads
+            leftThread.start();
+            rightThread.start();
+            // Wait for the threads to finish
+            try {
+                leftThread.join();
+                rightThread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            // Return the results
+            QVal leftVal = results[0];
+            QVal rightVal = results[1];
+
+            switch (concurrentBinaryExpr.getOperator()) {
+                case ConcurrentBinaryExpr.PLUS:
+                    return new QInt(((QInt) leftVal).getVal() + ((QInt) rightVal).getVal());
+                case ConcurrentBinaryExpr.MINUS:
+                    return new QInt(((QInt) leftVal).getVal() - ((QInt) rightVal).getVal());
+                case ConcurrentBinaryExpr.TIMES:
+                    return new QInt(((QInt) leftVal).getVal() * ((QInt) rightVal).getVal());
+                case ConcurrentBinaryExpr.DOT:
+                    /**
+                     * DOT expression implementation
+                     * Update: The DOT expression is now working fine with nil value in either left
+                     * or right.
+                     */
+                    QObj obj = new QObj(leftVal, rightVal);
+                    return new QRef(obj);
+                default:
+                    throw new RuntimeException("Unhandled operator");
+            }
+
+        }
+
+        else {
             throw new RuntimeException("Unhandled Expr type");
         }
     }
