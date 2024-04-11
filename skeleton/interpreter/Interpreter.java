@@ -332,15 +332,15 @@ public class Interpreter {
         } else if (expr instanceof ConcurrentBinaryExpr) {
             ConcurrentBinaryExpr concurrentBinaryExpr = (ConcurrentBinaryExpr) expr;
             /*
-             * !Evaluate the left and right expressions in two different threads
+             * Evaluate the left and right expressions in two different threads
              */
             // Final holder for thread result
             final QVal[] results = new QVal[2];
-            // Create the first thread for leftVal
+            // Create the first thread for leftVal evaluation
             Thread leftThread = new Thread(() -> {
                 results[0] = evaluate(concurrentBinaryExpr.getLeftExpr(), env);
             });
-            // Create the second thread for rightVal
+            // Create the second thread for rightVal evaluation
             Thread rightThread = new Thread(() -> {
                 results[1] = evaluate(concurrentBinaryExpr.getRightExpr(), env);
             });
@@ -354,7 +354,7 @@ public class Interpreter {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            // Return the results
+            // Get the results from the threads
             QVal leftVal = results[0];
             QVal rightVal = results[1];
 
@@ -377,9 +377,7 @@ public class Interpreter {
                     throw new RuntimeException("Unhandled operator");
             }
 
-        }
-
-        else {
+        } else {
             throw new RuntimeException("Unhandled Expr type");
         }
     }
