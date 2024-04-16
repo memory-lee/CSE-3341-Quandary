@@ -211,6 +211,28 @@ public class Interpreter {
                 obj.setRight(val2);
                 return null;
             }
+            /**
+             * TODO: Implement acq() method here
+             */
+            else if (callStmt.getFuncName().equals("acq")) {
+                QVal val = evaluate(callStmt.getArgs().getFirst(), env);
+                if (val != null) {
+                    while (!val.lock.compareAndSet(false, true)) {
+                        // wait until lock is acquired
+                    }
+                }
+                return null;
+            }
+            /**
+             * TODO: Implement rel() method here
+             */
+            else if (callStmt.getFuncName().equals("rel")) {
+                QVal val = evaluate(callStmt.getArgs().getFirst(), env);
+                if (val != null) {
+                    val.lock.set(false);
+                }
+                return null;
+            }
             FuncDef callee = astRoot.getFuncs().lookupFuncDef(callStmt.getFuncName());
             HashMap<String, QVal> calleeEnv = new HashMap<>();
             FormalDeclList currFormalList = callee.getParams();
@@ -227,7 +249,9 @@ public class Interpreter {
             execute(callee.getBody(), calleeEnv);
             return null;
         } else {
-            throw new RuntimeException("Unhandled statement type");
+            // treat it as empty statment list
+            return null;
+            // throw new RuntimeException("Unhandled statement type");
         }
     }
 
@@ -296,6 +320,27 @@ public class Interpreter {
                 QVal val2 = evaluate(callExpr.getArgs().getRest().getFirst(), env);
                 obj.setRight(val2);
                 return new QInt(1);
+            } /**
+               * TODO: Implement acq() method here
+               */
+            else if (callExpr.getFuncName().equals("acq")) {
+                QVal val = evaluate(callExpr.getArgs().getFirst(), env);
+                if (val != null) {
+                    while (!val.lock.compareAndSet(false, true)) {
+                        // wait until lock is acquired
+                    }
+                }
+                return new QInt(1);
+            }
+            /**
+             * TODO: Implement rel() method here
+             */
+            else if (callExpr.getFuncName().equals("rel")) {
+                QVal val = evaluate(callExpr.getArgs().getFirst(), env);
+                if (val != null) {
+                    val.lock.set(false);
+                }
+                return new QInt(1);
             }
             FuncDef callee = astRoot.getFuncs().lookupFuncDef(callExpr.getFuncName());
             HashMap<String, QVal> calleeEnv = new HashMap<>();
@@ -307,29 +352,10 @@ public class Interpreter {
                 currExprList = currExprList.getRest();
             }
             return execute(callee.getBody(), calleeEnv);
-        } else if (expr instanceof BinaryExpr) {
-            BinaryExpr binaryExpr = (BinaryExpr) expr;
-            QVal leftVal = evaluate(binaryExpr.getLeftExpr(), env);
-            QVal rightVal = evaluate(binaryExpr.getRightExpr(), env);
-            switch (binaryExpr.getOperator()) {
-                case BinaryExpr.PLUS:
-                    return new QInt(((QInt) leftVal).getVal() + ((QInt) rightVal).getVal());
-                case BinaryExpr.MINUS:
-                    return new QInt(((QInt) leftVal).getVal() - ((QInt) rightVal).getVal());
-                case BinaryExpr.TIMES:
-                    return new QInt(((QInt) leftVal).getVal() * ((QInt) rightVal).getVal());
-                case BinaryExpr.DOT:
-                    /**
-                     * DOT expression implementation
-                     * Update: The DOT expression is now working fine with nil value in either left
-                     * or right.
-                     */
-                    QObj obj = new QObj(leftVal, rightVal);
-                    return new QRef(obj);
-                default:
-                    throw new RuntimeException("Unhandled operator");
-            }
         } else if (expr instanceof ConcurrentBinaryExpr) {
+            // log the concurrent binary expression
+            // System.out.println("Handling as ConcurrentBinaryExpr");
+
             ConcurrentBinaryExpr concurrentBinaryExpr = (ConcurrentBinaryExpr) expr;
             /*
              * Evaluate the left and right expressions in two different threads
@@ -377,6 +403,29 @@ public class Interpreter {
                     throw new RuntimeException("Unhandled operator");
             }
 
+        } else if (expr instanceof BinaryExpr) {
+            // System.out.println("Handling as BinaryExpr");
+            BinaryExpr binaryExpr = (BinaryExpr) expr;
+            QVal leftVal = evaluate(binaryExpr.getLeftExpr(), env);
+            QVal rightVal = evaluate(binaryExpr.getRightExpr(), env);
+            switch (binaryExpr.getOperator()) {
+                case BinaryExpr.PLUS:
+                    return new QInt(((QInt) leftVal).getVal() + ((QInt) rightVal).getVal());
+                case BinaryExpr.MINUS:
+                    return new QInt(((QInt) leftVal).getVal() - ((QInt) rightVal).getVal());
+                case BinaryExpr.TIMES:
+                    return new QInt(((QInt) leftVal).getVal() * ((QInt) rightVal).getVal());
+                case BinaryExpr.DOT:
+                    /**
+                     * DOT expression implementation
+                     * Update: The DOT expression is now working fine with nil value in either left
+                     * or right.
+                     */
+                    QObj obj = new QObj(leftVal, rightVal);
+                    return new QRef(obj);
+                default:
+                    throw new RuntimeException("Unhandled operator");
+            }
         } else {
             throw new RuntimeException("Unhandled Expr type");
         }

@@ -1,0 +1,7 @@
+Testing -heapsize 1638400  pcfixed3.q 42, worth 1 points: FAILED
+Testing -heapsize 1638400  pcfixed4.q 42, worth 1 points: FAILED
+pcfixed5.q 42, worth 1 points: FAILED
+Testing -heapsize 1638400  pcfixed4.q 42, worth 6 points: FAILED
+Testing -heapsize 1638400  pcfixed5.q 42, worth 6 points: FAILED
+Testing -heapsize 1638400 pcfixed.q 42, worth 1 points: FAILED
+Testing -heapsize 1638400  pcfixed4.q 42, worth 1 points: FAILED
